@@ -8,12 +8,8 @@ from models import StegaStampDecoder
 import matplotlib.pyplot as plt
 
 
-
-mean = 0
-std = 0
-
 accuracy_array = []
-std_array = []
+compression_rate_array = []
 
 device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
@@ -44,11 +40,13 @@ bitwise_accuracy = 0
 fingerprint = (fingerprint > 0).long().to(device)
 
 
-for i in range(11):
+for i in range(100,9,-10):
     j=0
     for filename in os.listdir(image_directory):
 
         j += 1 #to count the number of images in the folder
+        #if j==11:
+            #break;
         
         if filename.endswith(('.png', '.jpg', '.jpeg', '.bmp', '.tiff')):
             
@@ -57,32 +55,29 @@ for i in range(11):
             
             #img = img/255 #if we want the images in greyscale
 
-            x, y, channels = img.shape  # Include the third dimension for color channels
+            # Convert BGR to RGB
+            img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
 
-            # Generate noise with the same shape as that of the image
-            noise = np.random.normal(loc=mean, scale=std, size=(x, y, channels))  # Adjust noise shape
+            os.makedirs(os.path.join("/media/giacomo/hdd_ubuntu/jpeg_compression_quality_100-10_style2_50k", f"{i}") , exist_ok=True)
+            png_filename = os.path.join(os.path.join("/media/giacomo/hdd_ubuntu/jpeg_compression_quality_100-10_style2_50k", f"{i}"), filename)
+            PIL.Image.fromarray(img, "RGB").save(png_filename,"JPEG", quality=i)
 
-            # Add the noise to the image
-            img_noised = img + noise
-
-            # Clip the pixel values to be between 0 and 255 and convert to uint8
-            img_noised = np.clip(img_noised, 0, 255).astype(np.uint8)
+            img_path = os.path.join(os.path.join("/media/giacomo/hdd_ubuntu/jpeg_compression_quality_100-10_style2_50k", f"{i}"), filename)
+            img = cv2.imread(img_path,3)
 
             # Convert BGR to RGB
-            img_noised_rgb = cv2.cvtColor(img_noised, cv2.COLOR_BGR2RGB)
+            img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
 
-            img_noised_rgb_array = np.array(img_noised_rgb)
-            image_noised_rgb_tensor = torch.from_numpy(img_noised_rgb_array).permute(2, 0, 1).float().to(device)
+            img_array = np.array(img)
+            image_tensor = torch.from_numpy(img_array).permute(2, 0, 1).float().to(device)
 
-            detected_fingerprints = RevealNet(image_noised_rgb_tensor.unsqueeze(0))
+            detected_fingerprints = RevealNet(image_tensor.unsqueeze(0))
             detected_fingerprints = (detected_fingerprints > 0).long()
         
             print(detected_fingerprints)
             bitwise_accuracy += (detected_fingerprints == fingerprint).float().mean(dim=1).sum().item()
 
-            os.makedirs(os.path.join("/media/giacomo/hdd_ubuntu/gau_noise_std_0-100_style2_50k", f"{std}") , exist_ok=True)
-            png_filename = os.path.join(os.path.join("/media/giacomo/hdd_ubuntu/gau_noise_std_0-100_style2_50k", f"{std}"), filename)
-            PIL.Image.fromarray(img_noised_rgb, "RGB").save(png_filename)
+            
             
             """
             usefull to visualize what we are doing. Use it only with few images to try the code
@@ -104,25 +99,26 @@ for i in range(11):
             print("img_array")
             print(img_array)
             
-    std_array.append(std)
-    std +=10
+    compression_rate_array.append(i)
     bitwise_accuracy = bitwise_accuracy/j
     accuracy_array.append(bitwise_accuracy)
     
 
-print(std_array)
+print(compression_rate_array)
 print(accuracy_array)
 
-plt.plot(std_array, accuracy_array, marker='s', linestyle='--', color='black', markerfacecolor='red', markeredgecolor='red')
+plt.plot(compression_rate_array, accuracy_array, marker='s', linestyle='--', color='black', markerfacecolor='red', markeredgecolor='red')
 plt.grid(color='grey', linestyle='-', linewidth=0.5)
 
 plt.yticks([0.4,0.5,0.6,0.7,0.8,0.9,1.0]) #to fix the y scale but it can be used also accuracy_array
+plt.xticks([100,90,80,70,60,50,40,30,20,10])
+plt.gca().invert_xaxis() 
+
 
 #figure, axis = plt.subplots(1, 1)
 #figure.suptitle("Gaussian noise")
 #axis.plot(std_array, accuracy_array)
-plt.title("Gaussian noise", fontweight="bold")
+plt.title("JPEG compression", fontweight="bold")
 plt.ylabel("Bitwise accuracy")
-plt.xlabel("Noise std")
+plt.xlabel("% of quality")
 plt.show()
-
