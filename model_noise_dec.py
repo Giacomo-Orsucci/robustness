@@ -1,27 +1,32 @@
 import numpy as np
 import os
-import PIL
 from PIL import Image
-import cv2
 import torch
 from models import StegaStampDecoder
 import matplotlib.pyplot as plt
 
 
-#In the article this is applied to the stylegan2 network and images generation.
-#In my opinion is more worth to study how this affect the decoder, in order to study
-#how the quantization precision can affect it in a malicious point of view.
+#In the article this is applied to the ProGAN network and images generation.
+#I use StyleGAN2 instead of ProGAN because the images generated with it showed a better bitwise_accuracy.
+#However, in the article this robustness study is applied to the network model, but
+#in my opinion is more worth to study how this affect the decoder, in order to study
+#how the gaussian noise can affect it in a malicious point of view.
 
 
-# Function to quantize model weights to a specific precision
-def quantize_weights(model, precision):
+#Function to add gaussian noise to decoder's parameters
+def param_noise(model, mean, std):
+    noise = np.random.normal(loc=mean, scale=std)  
+
     for param in model.parameters():
         if param.requires_grad:
-            param.data = torch.round(param.data / precision) * precision
+            param.data += noise
 
+
+mean = 0
+std = 0
 
 accuracy_array = []
-quant_prec_array = []
+std_array = []
 
 device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
@@ -51,16 +56,12 @@ RevealNet.eval()      # Set the model to evaluation mode
 bitwise_accuracy = 0
 fingerprint = (fingerprint > 0).long().to(device)
 
-i = 10**-5
+for i in range(0,31,5):
 
-end = 1
-
-step = 10
-
-
-while i <= end:
+    std = i/100
 
     j=0
+    
     for filename in os.listdir(image_directory):
 
         j += 1 #to count the number of images in the folder
@@ -83,7 +84,7 @@ while i <= end:
             RevealNet.to(device)  # Move the model to the device
             RevealNet.eval()      # Set the model to evaluation mode
 
-            quantize_weights(RevealNet, i)
+            param_noise(RevealNet, mean, std)
 
             img_path = os.path.join(image_directory, filename)
             img = Image.open(img_path)
@@ -101,24 +102,22 @@ while i <= end:
             print("img_array")
             print(img_array)
             
-    quant_prec_array.append(i)
+    std_array.append(std)
     bitwise_accuracy = bitwise_accuracy/j
     accuracy_array.append(bitwise_accuracy)
-
-    i = i*step
     
 
-print(quant_prec_array)
+print(std_array)
 print(accuracy_array)
 
-plt.plot(quant_prec_array, accuracy_array, marker='s', linestyle='--', color='black', markerfacecolor='red', markeredgecolor='red')
+plt.plot(std_array, accuracy_array, marker='s', linestyle='--', color='black', markerfacecolor='red', markeredgecolor='red')
 plt.grid(color='grey', linestyle='-', linewidth=0.5)
 
 plt.yticks([0.4,0.5,0.6,0.7,0.8,0.9,1.0]) #to fix the y scale but it can be used also accuracy_array
-plt.xticks(np.logspace(-5, 0, 6))
-plt.xscale("log")
+plt.xticks([0,0.05,0.1,0.15,0.2,0.25,0.3])
 
-plt.title("Model quantization", fontweight="bold")
+
+plt.title("Model noise", fontweight="bold")
 plt.ylabel("Bitwise accuracy")
-plt.xlabel("Quantization decimal precision")
+plt.xlabel("Noise std")
 plt.show()
