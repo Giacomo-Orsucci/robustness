@@ -71,8 +71,8 @@ for i in range(0,31,5):
         
         if filename.endswith(('.png', '.jpg', '.jpeg', '.bmp', '.tiff')):
 
-            print("Precision")
-            print(i)
+            print("std")
+            print(std)
             
 
             RevealNet = StegaStampDecoder( #decoder and parameter passing
