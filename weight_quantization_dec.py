@@ -65,8 +65,8 @@ while i <= end:
 
         j += 1 #to count the number of images in the folder
 
-        if j == 11:
-            break;
+        #if j == 11:
+            #break;
         
         if filename.endswith(('.png', '.jpg', '.jpeg', '.bmp', '.tiff')):
 
