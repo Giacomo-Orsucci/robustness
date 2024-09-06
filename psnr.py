@@ -32,7 +32,6 @@ def main():
             [
                 transforms.CenterCrop(148),
                 transforms.Resize(128),
-                transforms.ToTensor(),
             ]
         )
 
@@ -43,8 +42,8 @@ def main():
 
         j = j+1
 
-        if j == 31:
-            break;
+        #if j == 31:
+            #break;
 
         ori_img_path = os.path.join(original_image_directory, filename)
         original = cv2.imread(ori_img_path,3)
@@ -55,25 +54,14 @@ def main():
         filename = base_name + "." + "png"
 
 
-
-
         fin_img_path = os.path.join(finger_image_directory, filename)
         fingerprinted = cv2.imread(fin_img_path, 3)
 
         original = PIL.Image.fromarray(original)
         original = transform(original) #to properly resize celeba images
 
-        original = original.permute(1, 2, 0).numpy() * 255  # Reshape to (128, 128, 3) and scale
+        original = np.array(original)
         
-
-        #fingerprinted = PIL.Image.fromarray(fingerprinted)
-        #fingerprinted = transform(fingerprinted) #to properly resize celeba images
-
-        #fingerprinted = fingerprinted.permute(1, 2, 0).numpy() * 255  # Reshape to (128, 128, 3) and scale
-        #fingerprinted = PIL.Image.fromarray(fingerprinted)
-        #fingerprinted = transform(fingerprinted) #to properly resize celeba images
-
-
         PSNR_value = PSNR_value + PSNR(original, fingerprinted) 
 
 
