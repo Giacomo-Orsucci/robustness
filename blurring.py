@@ -6,11 +6,14 @@ import cv2
 import torch
 from models import StegaStampDecoder
 import matplotlib.pyplot as plt
+from psnr import main
+from graphs import plotting
 
 
 
 accuracy_array = []
 size_array = []
+psnr_array = []
 
 
 device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
@@ -22,7 +25,7 @@ fingerprint = torch.tensor([0,1,0,0,0,1,0,0,0,1,0,0,0,0,1,0,1,1,1,0,1,0,1,1,1,1,
                             0,1,0,0,0,0,0,1,1,1,1,1,0,1,1,0,1,0,1,0,1,1,0,0,0,0,0,0,0,0,1,1,0,1,1,1,1,
                             0,1,0,1,1,1,0,1,0,1,0,1,0,0,1,0,1,1,1,1,1,1,1,1,1,1,1,0])
 
-image_directory = '/media/giacomo/hdd_ubuntu/stylegan2_gen'
+image_directory = '/media/giacomo/hdd_ubuntu/stylegan2_gen_50k'
 
 
 IMAGE_RESOLUTION = 128
@@ -41,7 +44,7 @@ RevealNet.eval()      # Set the model to evaluation mode
 bitwise_accuracy = 0
 fingerprint = (fingerprint > 0).long().to(device)
 
-
+img_noise_path=" "
 for i in range(1,75,8):
 
     k = i;
@@ -53,10 +56,10 @@ for i in range(1,75,8):
     for filename in os.listdir(image_directory):
 
         j += 1 #to count the number of images in the folder
+        print(j)
 
 
-        #if j == 11: #to ensure a little generation to try the code
-        #    break;
+        #if j == 11: break #to ensure a little generation to try the code
         
         if filename.endswith(('.png', '.jpg', '.jpeg', '.bmp', '.tiff')):
             
@@ -75,11 +78,12 @@ for i in range(1,75,8):
             detected_fingerprints = RevealNet(image_blurred_rgb_tensor.unsqueeze(0))
             detected_fingerprints = (detected_fingerprints > 0).long()
         
-            print(detected_fingerprints)
+            #print(detected_fingerprints)
             bitwise_accuracy += (detected_fingerprints == fingerprint).float().mean(dim=1).sum().item()
 
-            os.makedirs(os.path.join("/media/giacomo/hdd_ubuntu/gau_blurring_size_1-73_style2_50k", f"{k}") , exist_ok=True)
-            png_filename = os.path.join(os.path.join("/media/giacomo/hdd_ubuntu/gau_blurring_size_1-73_style2_50k", f"{k}"), filename)
+            img_noise_path = os.path.join("/media/giacomo/hdd_ubuntu/gau_blurring_size_1-73_style2_50k", f"{k}")
+            os.makedirs(img_noise_path , exist_ok=True)
+            png_filename = os.path.join(img_noise_path, filename)
             PIL.Image.fromarray(img_blurred_rgb_array, "RGB").save(png_filename)
             
             """
@@ -98,6 +102,8 @@ for i in range(1,75,8):
             
             """
             
+    psnr = main(image_directory, img_noise_path)
+    psnr_array.append(psnr)
     size_array.append(i)
     bitwise_accuracy = bitwise_accuracy/j
     accuracy_array.append(bitwise_accuracy)
@@ -105,12 +111,16 @@ for i in range(1,75,8):
 
 print(size_array)
 print(accuracy_array)
+print(psnr_array)
 
+plotting(size_array,accuracy_array,psnr_array,"kernel size","Bitwise accuracy","PSNR","Gaussian blurring")
+
+"""
 plt.plot(size_array, accuracy_array, marker='s', linestyle='--', color='black', markerfacecolor='red', markeredgecolor='red')
 plt.grid(color='grey', linestyle='-', linewidth=0.5)
 
 plt.yticks([0.4,0.5,0.6,0.7,0.8,0.9,1.0]) #to fix the y scale but it can be used also accuracy_array
-plt.xticks([0,5,10,15,20,25,30,35,40,45,50,55,60,65,70,75]) #to fix the x scale but it can be used also accuracy_array
+plt.xticks([0,5,10,15,20,25,30,35,40,45,50,55,60,65,70,75]) #to fix the x scale
 
 #figure, axis = plt.subplots(1, 1)
 #figure.suptitle("Gaussian noise")
@@ -119,4 +129,4 @@ plt.title("Gaussian blurring", fontweight="bold")
 plt.ylabel("Bitwise accuracy")
 plt.xlabel("Kernel size")
 plt.show()
-
+"""

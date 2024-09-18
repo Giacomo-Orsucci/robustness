@@ -32,7 +32,7 @@ fingerprint = torch.tensor([0,1,0,0,0,1,0,0,0,1,0,0,0,0,1,0,1,1,1,0,1,0,1,1,1,1,
                             0,1,0,0,0,0,0,1,1,1,1,1,0,1,1,0,1,0,1,0,1,1,0,0,0,0,0,0,0,0,1,1,0,1,1,1,1,
                             0,1,0,1,1,1,0,1,0,1,0,1,0,0,1,0,1,1,1,1,1,1,1,1,1,1,1,0])
 
-image_directory = '/media/giacomo/hdd_ubuntu/stylegan2_gen'
+image_directory = '/media/giacomo/hdd_ubuntu/stylegan2_gen_50k'
 
 
 IMAGE_RESOLUTION = 128

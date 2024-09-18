@@ -6,10 +6,12 @@ import cv2
 import torch
 from models import StegaStampDecoder
 import matplotlib.pyplot as plt
-
+from graphs import plotting
+from psnr import main
 
 accuracy_array = []
 crop_size_array = []
+psnr_array = []
 
 device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
@@ -20,7 +22,7 @@ fingerprint = torch.tensor([0,1,0,0,0,1,0,0,0,1,0,0,0,0,1,0,1,1,1,0,1,0,1,1,1,1,
                             0,1,0,0,0,0,0,1,1,1,1,1,0,1,1,0,1,0,1,0,1,1,0,0,0,0,0,0,0,0,1,1,0,1,1,1,1,
                             0,1,0,1,1,1,0,1,0,1,0,1,0,0,1,0,1,1,1,1,1,1,1,1,1,1,1,0])
 
-image_directory = '/media/giacomo/hdd_ubuntu/stylegan2_gen'
+image_directory = '/media/giacomo/hdd_ubuntu/stylegan2_gen_50k'
 
 
 IMAGE_RESOLUTION = 128
@@ -45,6 +47,8 @@ for i in range(128,10,-8):
     for filename in os.listdir(image_directory):
 
         j += 1 #to count the number of images in the folder
+
+        #if j == 11: break
         
         if filename.endswith(('.png', '.jpg', '.jpeg', '.bmp', '.tiff')):
 
@@ -77,11 +81,13 @@ for i in range(128,10,-8):
             # Paste the resized image onto the black background
             img_final.paste(img_cropped, (left_pad, top_pad))
 
-            os.makedirs(os.path.join("/media/giacomo/hdd_ubuntu/jpeg_cropsize_128-63_style2_50k", f"{i}") , exist_ok=True)
-            img_filename = os.path.join(os.path.join("/media/giacomo/hdd_ubuntu/jpeg_cropsize_128-63_style2_50k", f"{i}"), filename)
+
+            img_crop_path = os.path.join("/media/giacomo/hdd_ubuntu/jpeg_cropsize_128-63_style2_50k", f"{i}") 
+            os.makedirs(img_crop_path, exist_ok=True)
+            img_filename = os.path.join(img_crop_path, filename)
             img_final.save(img_filename)
 
-            img_path = os.path.join(os.path.join("/media/giacomo/hdd_ubuntu/jpeg_cropsize_128-63_style2_50k", f"{i}"), filename)
+            img_path = os.path.join(img_crop_path, filename)
             img = Image.open(img_path)
 
             img_array = np.array(img)
@@ -98,6 +104,8 @@ for i in range(128,10,-8):
             print("img_array")
             print(img_array)
             
+    psnr = main(image_directory, img_crop_path)
+    psnr_array.append(psnr)
     crop_size_array.append(i)
     bitwise_accuracy = bitwise_accuracy/j
     accuracy_array.append(bitwise_accuracy)
@@ -105,7 +113,8 @@ for i in range(128,10,-8):
 
 print(crop_size_array)
 print(accuracy_array)
-
+print(psnr_array)
+"""
 plt.plot(crop_size_array, accuracy_array, marker='s', linestyle='--', color='black', markerfacecolor='red', markeredgecolor='red')
 plt.grid(color='grey', linestyle='-', linewidth=0.5)
 
@@ -116,3 +125,6 @@ plt.title("Center cropping", fontweight="bold")
 plt.ylabel("Bitwise accuracy")
 plt.xlabel("Crop size")
 plt.show()
+"""
+
+plotting(crop_size_array,accuracy_array,psnr_array,"Crop size","Bitwise accuracy","PSNR (dB)","Center cropping")

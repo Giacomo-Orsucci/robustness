@@ -6,6 +6,8 @@ import cv2
 import torch
 from models import StegaStampDecoder
 import matplotlib.pyplot as plt
+from graphs import plotting
+from psnr import main
 
 
 
@@ -14,6 +16,7 @@ std = 0
 
 accuracy_array = []
 std_array = []
+psnr_array = []
 
 device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
@@ -24,7 +27,7 @@ fingerprint = torch.tensor([0,1,0,0,0,1,0,0,0,1,0,0,0,0,1,0,1,1,1,0,1,0,1,1,1,1,
                             0,1,0,0,0,0,0,1,1,1,1,1,0,1,1,0,1,0,1,0,1,1,0,0,0,0,0,0,0,0,1,1,0,1,1,1,1,
                             0,1,0,1,1,1,0,1,0,1,0,1,0,0,1,0,1,1,1,1,1,1,1,1,1,1,1,0])
 
-image_directory = '/media/giacomo/hdd_ubuntu/stylegan2_gen'
+image_directory = '/media/giacomo/hdd_ubuntu/stylegan2_gen_50k'
 
 
 IMAGE_RESOLUTION = 128
@@ -49,6 +52,9 @@ for i in range(11):
     for filename in os.listdir(image_directory):
 
         j += 1 #to count the number of images in the folder
+
+        print(j)
+        #if j == 10: break
         
         if filename.endswith(('.png', '.jpg', '.jpeg', '.bmp', '.tiff')):
             
@@ -79,9 +85,11 @@ for i in range(11):
         
             print(detected_fingerprints)
             bitwise_accuracy += (detected_fingerprints == fingerprint).float().mean(dim=1).sum().item()
+            
 
-            os.makedirs(os.path.join("/media/giacomo/hdd_ubuntu/gau_noise_std_0-100_style2_50k", f"{std}") , exist_ok=True)
-            png_filename = os.path.join(os.path.join("/media/giacomo/hdd_ubuntu/gau_noise_std_0-100_style2_50k", f"{std}"), filename)
+            img_noise_path = os.path.join("/media/giacomo/hdd_ubuntu/gau_noise_std_0-100_style2_50k", f"{std}") 
+            os.makedirs(img_noise_path, exist_ok=True)
+            png_filename = os.path.join(img_noise_path, filename)
             PIL.Image.fromarray(img_noised_rgb, "RGB").save(png_filename)
             
             """
@@ -104,6 +112,8 @@ for i in range(11):
             print("img_array")
             print(img_array)
             
+    psnr = main(image_directory, img_noise_path)
+    psnr_array.append(psnr)
     std_array.append(std)
     std +=10
     bitwise_accuracy = bitwise_accuracy/j
@@ -112,17 +122,7 @@ for i in range(11):
 
 print(std_array)
 print(accuracy_array)
+print(psnr_array)
 
-plt.plot(std_array, accuracy_array, marker='s', linestyle='--', color='black', markerfacecolor='red', markeredgecolor='red')
-plt.grid(color='grey', linestyle='-', linewidth=0.5)
-
-plt.yticks([0.4,0.5,0.6,0.7,0.8,0.9,1.0]) #to fix the y scale but it can be used also accuracy_array
-
-#figure, axis = plt.subplots(1, 1)
-#figure.suptitle("Gaussian noise")
-#axis.plot(std_array, accuracy_array)
-plt.title("Gaussian noise", fontweight="bold")
-plt.ylabel("Bitwise accuracy")
-plt.xlabel("Noise std")
-plt.show()
+plotting(std_array,accuracy_array,psnr_array,"noise_std","Bitwise accuracy","PSNR","Gaussian noise")
 
