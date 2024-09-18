@@ -113,7 +113,7 @@ print(size_array)
 print(accuracy_array)
 print(psnr_array)
 
-plotting(size_array,accuracy_array,psnr_array,"kernel size","Bitwise accuracy","PSNR","Gaussian blurring")
+plotting(size_array,accuracy_array,psnr_array,"kernel size","Bitwise accuracy","PSNR (dB)","Gaussian blurring")
 
 """
 plt.plot(size_array, accuracy_array, marker='s', linestyle='--', color='black', markerfacecolor='red', markeredgecolor='red')

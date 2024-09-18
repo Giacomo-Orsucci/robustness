@@ -122,7 +122,7 @@ print(compression_rate_array)
 print(accuracy_array)
 print(psnr_array)
 
-plotting(compression_rate_array,accuracy_array,psnr_array,"% of quality","Bitwise accuracy","PSNR","JPEG compression")
+plotting(compression_rate_array,accuracy_array,psnr_array,"% of quality","Bitwise accuracy","PSNR (dB)","JPEG compression")
 
 """
 plt.plot(compression_rate_array, accuracy_array, marker='s', linestyle='--', color='black', markerfacecolor='red', markeredgecolor='red')

@@ -124,5 +124,5 @@ print(std_array)
 print(accuracy_array)
 print(psnr_array)
 
-plotting(std_array,accuracy_array,psnr_array,"noise_std","Bitwise accuracy","PSNR","Gaussian noise")
+plotting(std_array,accuracy_array,psnr_array,"noise_std","Bitwise accuracy","PSNR (dB)","Gaussian noise")
 
