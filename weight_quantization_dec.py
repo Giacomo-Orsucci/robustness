@@ -25,14 +25,14 @@ quant_prec_array = []
 
 device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
-decoder_path = "/home/giacomo/Desktop/enc_dec_pretrained_celeba/dec.pth"
+decoder_path = "/media/giacomo/volume/old/trained_byme/dec.pth"
 
 #fingerprint embedded in the images
 fingerprint = torch.tensor([0,1,0,0,0,1,0,0,0,1,0,0,0,0,1,0,1,1,1,0,1,0,1,1,1,1,1,1,1,1,0,0,1,1,1,
                             0,1,0,0,0,0,0,1,1,1,1,1,0,1,1,0,1,0,1,0,1,1,0,0,0,0,0,0,0,0,1,1,0,1,1,1,1,
                             0,1,0,1,1,1,0,1,0,1,0,1,0,0,1,0,1,1,1,1,1,1,1,1,1,1,1,0])
 
-image_directory = '/media/giacomo/hdd_ubuntu/stylegan2_gen_50k'
+image_directory = '/media/giacomo/volume/old/stylegan2_gen_50k_config-e_25'
 
 
 IMAGE_RESOLUTION = 128
@@ -65,8 +65,7 @@ while i <= end:
 
         j += 1 #to count the number of images in the folder
 
-        #if j == 11:
-            #break;
+        #if j == 10: break;
         
         if filename.endswith(('.png', '.jpg', '.jpeg', '.bmp', '.tiff')):
 

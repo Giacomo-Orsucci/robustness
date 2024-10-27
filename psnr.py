@@ -6,10 +6,19 @@ import os
 from torchvision import transforms
 import PIL
 
+
+
+#ultimo utilizzo mediante esecuzione diretta
+
+
 #original_image_directory = '/media/giacomo/hdd_ubuntu/old/celeba_fin_old_200k'
 #finger_image_directory = '/media/giacomo/hdd_ubuntu/new/celeba_fin_new_200k'
 #finger_image_directory = '/media/giacomo/hdd_ubuntu/celeba-fingerprinted-200k'
 #finger_image_directory = '/media/giacomo/hdd_ubuntu/dataset_celeba/img_celeba'
+
+original_image_directory = '/home/giacomo/Desktop/fin2/fingerprinted_images'
+finger_image_directory = '/home/giacomo/Desktop/fin1/fingerprinted_images'
+
 
 
 #compressed or fingerprinted or generated
@@ -43,7 +52,7 @@ def main(original_image_directory, finger_image_directory):
 
         j = j+1
 
-        #if j == 11: break;
+        #if j == 10: break;
 
         ori_img_path = os.path.join(original_image_directory, filename)
         original = cv2.imread(ori_img_path,3)
@@ -73,10 +82,11 @@ def main(original_image_directory, finger_image_directory):
         #print(j)
 
 
-    PSNR_value = PSNR_value/(j-1)
+    PSNR_value = PSNR_value/(j)
+    print(f"PSNR value is {PSNR_value} dB") 
     return PSNR_value
 
-    print(f"PSNR value is {PSNR_value} dB") 
+   
        
 if __name__ == "__main__": 
-    main() 
+    main(original_image_directory, finger_image_directory) 

@@ -16,14 +16,14 @@ psnr_array = []
 
 device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
-decoder_path = "/home/giacomo/Desktop/enc_dec_pretrained_celeba/dec.pth"
+decoder_path = "/media/giacomo/volume/old/trained_byme/dec.pth"
 
 #fingerprint embedded in the images
 fingerprint = torch.tensor([0,1,0,0,0,1,0,0,0,1,0,0,0,0,1,0,1,1,1,0,1,0,1,1,1,1,1,1,1,1,0,0,1,1,1,
                             0,1,0,0,0,0,0,1,1,1,1,1,0,1,1,0,1,0,1,0,1,1,0,0,0,0,0,0,0,0,1,1,0,1,1,1,1,
                             0,1,0,1,1,1,0,1,0,1,0,1,0,0,1,0,1,1,1,1,1,1,1,1,1,1,1,0])
 
-image_directory = '/media/giacomo/hdd_ubuntu/stylegan2_gen_50k'
+image_directory = '/media/giacomo/volume/old/stylegan2_gen_50k_config-e_25'
 img_compressed_path = ""
 
 
@@ -49,7 +49,7 @@ for i in range(100,9,-10):
     for filename in os.listdir(image_directory):
 
         j += 1 #to count the number of images in the folder
-        #if j==11: break;
+        #if j==10: break;
         
         print(j)
         
@@ -63,7 +63,7 @@ for i in range(100,9,-10):
             # Convert BGR to RGB
             img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
 
-            img_compressed_path = os.path.join("/media/giacomo/hdd_ubuntu/jpeg_compression_quality_100-10_style2_50k", f"{i}")
+            img_compressed_path = os.path.join("/media/giacomo/volume/old/robustness/jpeg_compression_quality_100-10_style2_50k", f"{i}")
             os.makedirs(img_compressed_path, exist_ok=True)
             png_filename = os.path.join(img_compressed_path, filename)
 
