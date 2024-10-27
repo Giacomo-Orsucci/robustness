@@ -63,6 +63,8 @@ for i in range(11):
             
             img_path = os.path.join(image_directory, filename)
             img = cv2.imread(img_path,3)
+            print("dimensione immagine caricata")
+            print(img.shape)
             
             #img = img/255 #if we want the images in greyscale
 
