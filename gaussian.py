@@ -119,13 +119,13 @@ for i in range(11):
         y_channel_list = []
 
         for image in images:
-            print(images.shape)
+            #print(images.shape)
             if total==11: break;
             
             print(image.shape)
 
             image = image.permute(1, 2, 0).cpu().numpy()
-            print(image.shape)
+            #print(image.shape)
            #noise = torch.normal(mean=mean, std=std, size=image.shape)
 
             x, y, channels = image.shape  # Include the third dimension for color channels
@@ -160,8 +160,8 @@ for i in range(11):
             image_noised_yuv = rgb_to_yuv(image_noised)
             #image_noised = image_noised/255
             y_channel, u_channel, v_channel = cv2.split(image_noised)
-            print("Valore y")
-            print(y_channel)
+            #print("Valore y")
+            #print(y_channel)
             y_channel = torch.from_numpy(y_channel).float().unsqueeze(0).to(device)
             y_channel = y_channel
             #print("shape di image_y_noised")
@@ -170,8 +170,8 @@ for i in range(11):
             total+=1
 
             images_y_batch = torch.stack(y_channel_list).to(device)
-            print("shape di batch")
-            print(images_y_batch.shape)
+            #print("shape di batch")
+            #print(images_y_batch.shape)
 
         
         
@@ -180,13 +180,13 @@ for i in range(11):
         #print(j)
         detected_fingerprints = RevealNet(images_y_batch)
         detected_fingerprints = (detected_fingerprints > 0).long()
-        print("shape firme")
-        print(detected_fingerprints.shape)
+        #print("shape firme")
+        #print(detected_fingerprints.shape)
         
         for l in enumerate(detected_fingerprints):
             
-            print(f"firma{j}")
-            print(detected_fingerprints[l])
+            #print(f"firma{j}")
+            #print(detected_fingerprints[l])
             #to calculate the accuracy in retrieving the fingerprint (eventually perturbated)
             bitwise_accuracy += (detected_fingerprints[l].detach() == fingerprint).float().mean().sum().item()
             #print(bitwise_accuracy)
@@ -195,7 +195,7 @@ for i in range(11):
             
         
             
-    print(img_noise_path)
+    #print(img_noise_path)
     psnr = main(image_directory, img_noise_path)
     psnr_array.append(psnr)
     std_array.append(std)
