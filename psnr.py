@@ -48,7 +48,7 @@ def main(original_image_directory, finger_image_directory):
     j=0
     PSNR_value = 0
      
-    for filename in os.listdir(original_image_directory):
+    for filename in os.listdir(finger_image_directory):
 
         j = j+1
 
@@ -56,6 +56,8 @@ def main(original_image_directory, finger_image_directory):
 
         ori_img_path = os.path.join(original_image_directory, filename)
         original = cv2.imread(ori_img_path,3)
+        print("Percorso senza rumore")
+        print(ori_img_path)
 
         
         #to garantee that the "original" dataset has the same png extension as the other dataset
@@ -70,6 +72,8 @@ def main(original_image_directory, finger_image_directory):
 
         fin_img_path = os.path.join(finger_image_directory, filename)
         fingerprinted = cv2.imread(fin_img_path, 3)
+        print("Percorso con rumore")
+        print(fin_img_path)
 
         #to use only if the image has a size different from 128x128
         

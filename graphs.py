@@ -37,7 +37,7 @@ def plotting(std_array, accuracy_array, psnr, x1_title, y1_title, y2_title, imag
 
     plt.title(image_title, fontweight="bold")
     #fig.autofmt_xdate()
-    plt.gca().invert_xaxis() #only for jpeg_compression
+    #plt.gca().invert_xaxis() #only for jpeg_compression
     plt.show()
 
 def main():
