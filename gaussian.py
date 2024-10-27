@@ -90,7 +90,7 @@ for i in range(11):
             bitwise_accuracy += (detected_fingerprints == fingerprint).float().mean(dim=1).sum().item()
             
 
-            img_noise_path = os.path.join("/media/giacomo/volume/old/robustness/gau_noise_std_0-100_style2_25_50k", f"{std}") 
+            img_noise_path = os.path.join("/media/giacomo/volume/old/robustness/app", f"{std}") 
             os.makedirs(img_noise_path, exist_ok=True)
             png_filename = os.path.join(img_noise_path, filename)
             PIL.Image.fromarray(img_noised_rgb, "RGB").save(png_filename)
