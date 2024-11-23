@@ -49,7 +49,11 @@ class CustomImageFolder():
         return len(self.filenames)
 
 
-def main(image_directory, dec_path_pre):
+#image_directory = "/media/giacomo/volume/test_yuv/robustness/gau_blurring_size_1-73_style2_25_50k/1"
+image_directory="/media/giacomo/volume/test_yuv/robustness/gau_noise_std_0-100_style2_25_50k/30"
+dec_path = "/media/giacomo/volume/test_yuv/primo/checkpoints/dec.pth"
+
+def main(image_directory, dec_path, decoder=None):
 
     #Set the device
     device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
@@ -74,9 +78,12 @@ def main(image_directory, dec_path_pre):
     RevealNet_pre = StegaStampDecoder( #decoder and parameters passing
             IMAGE_RESOLUTION, IMAGE_CHANNELS, fingerprint_size=FINGERPRINT_SIZE
         )
-    RevealNet_pre.load_state_dict(torch.load(dec_path_pre))
+    RevealNet_pre.load_state_dict(torch.load(dec_path))
     RevealNet_pre = RevealNet_pre.to(device)
     RevealNet_pre.eval()
+
+    if decoder != None:
+        RevealNet_pre = decoder
 
 
     dataset = CustomImageFolder(image_directory, transform=transform)
@@ -133,3 +140,6 @@ def main(image_directory, dec_path_pre):
     bitwise_accuracy = bitwise_accuracy/j
     print(bitwise_accuracy)
     return bitwise_accuracy
+       
+if __name__ == "__main__": 
+    main(image_directory, dec_path)

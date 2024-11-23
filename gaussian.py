@@ -10,7 +10,7 @@ from graphs import plotting
 from psnr import main as mainp
 from accuracy import main as maina
 
-
+#To do: pulire il codice dato che tante cose sono inutili visto che l'accuratezza si calcola sulle immagini nella cartella
 
 mean = 0
 std = 0
@@ -22,7 +22,7 @@ psnr_array = []
 device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
 #decoder_path = "/home/giacomo/Desktop/enc_dec_pretrained_celeba/dec.pth"
-decoder_path = "/media/giacomo/volume/test_yuv/primo/checkpoints/dec.pth"
+decoder_path = "/media/giacomo/volume/yuv_base/enc-dec/checkpoints/dec.pth"
 
 #fingerprint embedded in the images
 fingerprint = torch.tensor([0,1,0,0,0,1,0,0,0,1,0,0,0,0,1,0,1,1,1,0,1,0,1,1,1,1,1,1,1,1,0,0,1,1,1,
@@ -30,7 +30,7 @@ fingerprint = torch.tensor([0,1,0,0,0,1,0,0,0,1,0,0,0,0,1,0,1,1,1,0,1,0,1,1,1,1,
                             0,1,0,1,1,1,0,1,0,1,0,1,0,0,1,0,1,1,1,1,1,1,1,1,1,1,1,0])
 
 #image_directory = '/media/giacomo/hdd_ubuntu/stylegan2_gen_50k'
-image_directory = '/media/giacomo/volume/test_yuv/stylegan2_gen_50k_config-e_25'
+image_directory = '/media/giacomo/volume/yuv_base/stylegan2_gen_50k_config-e_75_seed42'
 
 
 
@@ -60,7 +60,7 @@ for i in range(11):
         j += 1 #to count the number of images in the folder
 
         print(j)
-        #if j == 10: break
+        #if j == 100: break
         
         if filename.endswith(('.png', '.jpg', '.jpeg', '.bmp', '.tiff')):
             
@@ -113,12 +113,8 @@ for i in range(11):
             print(detected_fingerprints.shape)
         
             print(detected_fingerprints)
-            #bitwise_accuracy += (detected_fingerprints == fingerprint).float().mean(dim=1).sum().item()
-            #bitwise_accuracy += (detected_fingerprints.detach() == fingerprint).float().mean().sum().item()
-
             
-
-            img_noise_path = os.path.join("/media/giacomo/volume/test_yuv/robustness/gau_noise_std_0-100_style2_25_50k", f"{std}") 
+            img_noise_path = os.path.join("/media/giacomo/volume/yuv_base/robustness_75_seed42/gau_noise_std_0-100_style2_75_50k", f"{std}") 
             os.makedirs(img_noise_path, exist_ok=True)
             png_filename = os.path.join(img_noise_path, filename)
             PIL.Image.fromarray(img_noised_rgb, "RGB").save(png_filename)
@@ -127,7 +123,6 @@ for i in range(11):
     psnr = mainp(image_directory, img_noise_path)
     psnr_array.append(psnr)
     std_array.append(std)
-    #bitwise_accuracy = bitwise_accuracy/j
     bitwise_accuracy = maina(img_noise_path, decoder_path)
     accuracy_array.append(bitwise_accuracy)
     std +=10

@@ -7,7 +7,8 @@ import torch
 from models import StegaStampDecoder
 import matplotlib.pyplot as plt
 from graphs import plotting
-from psnr import main
+from psnr import main as mainp
+from accuracy import main as maina
 
 
 accuracy_array = []
@@ -16,19 +17,22 @@ psnr_array = []
 
 device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
-decoder_path = "/media/giacomo/volume/old/trained_byme/dec.pth"
+#decoder_path = "/media/giacomo/volume/test_yuv/primo/checkpoints/dec.pth"
+decoder_path = "/media/giacomo/volume/yuv_base/enc-dec/checkpoints/dec.pth"
+
 
 #fingerprint embedded in the images
 fingerprint = torch.tensor([0,1,0,0,0,1,0,0,0,1,0,0,0,0,1,0,1,1,1,0,1,0,1,1,1,1,1,1,1,1,0,0,1,1,1,
                             0,1,0,0,0,0,0,1,1,1,1,1,0,1,1,0,1,0,1,0,1,1,0,0,0,0,0,0,0,0,1,1,0,1,1,1,1,
                             0,1,0,1,1,1,0,1,0,1,0,1,0,0,1,0,1,1,1,1,1,1,1,1,1,1,1,0])
 
-image_directory = '/media/giacomo/volume/old/stylegan2_gen_50k_config-e_25'
+#image_directory = '/media/giacomo/volume/test_yuv/stylegan2_gen_50k_config-e_25'
+image_directory = '/media/giacomo/volume/yuv_base/stylegan2_gen_50k_config-e_75_seed42'
 img_compressed_path = ""
 
 
 IMAGE_RESOLUTION = 128
-IMAGE_CHANNELS = 3
+IMAGE_CHANNELS = 1
 FINGERPRINT_SIZE = len(fingerprint)
 
 RevealNet = StegaStampDecoder( #decoder and parameter passing
@@ -58,12 +62,11 @@ for i in range(100,9,-10):
             img_path = os.path.join(image_directory, filename)
             img = cv2.imread(img_path,3)
             
-            #img = img/255 #if we want the images in greyscale
 
             # Convert BGR to RGB
             img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
 
-            img_compressed_path = os.path.join("/media/giacomo/volume/old/robustness/jpeg_compression_quality_100-10_style2_50k", f"{i}")
+            img_compressed_path = os.path.join("/media/giacomo/volume/yuv_base/robustness_75_seed42/jpeg_compression_quality_100-10_style2_75_50k", f"{i}")
             os.makedirs(img_compressed_path, exist_ok=True)
             png_filename = os.path.join(img_compressed_path, filename)
 
@@ -72,49 +75,12 @@ for i in range(100,9,-10):
 
             PIL.Image.fromarray(img, "RGB").save(png_filename,"JPEG", quality=i)
 
-            #img_path = os.path.join(img_compressed_path, png_filename)
-            img = cv2.imread(png_filename,3)
-
-            # Convert BGR to RGB
-            img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-
-            img_array = np.array(img)
-            image_tensor = torch.from_numpy(img_array).permute(2, 0, 1).float().to(device)
-
-            detected_fingerprints = RevealNet(image_tensor.unsqueeze(0))
-            detected_fingerprints = (detected_fingerprints > 0).long()
-        
-            #print(detected_fingerprints)
-            bitwise_accuracy += (detected_fingerprints == fingerprint).float().mean(dim=1).sum().item()
-
-            
-            
-            """
-            usefull to visualize what we are doing. Use it only with few images to try the code
-
-            cv2.imshow("original image", img)
-            cv2.waitKey(0)
-            cv2.imshow("image with noise", img_noised)
-            cv2.waitKey(0)
-
-            img_path_saved = os.path.join("/media/giacomo/hdd_ubuntu/gau_noise_std_0-100_style2_50k", filename)
-            img_saved = cv2.imread(img_path_saved,3)
-
-            cv2.imshow("saved image", img_saved)
-            cv2.waitKey(0)
-            
-            """
-            img_array = np.array(img)
-        
-            #print("img_array")
-            #print(img_array)
-            
     print(image_directory)
     print(img_compressed_path)
-    psnr = main(image_directory, img_compressed_path)
+    psnr = mainp(image_directory, img_compressed_path)
     psnr_array.append(psnr)
     compression_rate_array.append(i)
-    bitwise_accuracy = bitwise_accuracy/j
+    bitwise_accuracy = maina(img_compressed_path, decoder_path)    
     accuracy_array.append(bitwise_accuracy)
     
 

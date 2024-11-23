@@ -54,26 +54,39 @@ def main(original_image_directory, finger_image_directory):
 
         #if j == 10: break;
 
+        
+        
+        #to garantee that the "original" dataset has the same png extension as the other dataset
+        #it can be changed depending on your needs
+        base_name, _ = os.path.splitext(filename)
+        filename = base_name + "." + "png"
+        
+        
         ori_img_path = os.path.join(original_image_directory, filename)
         original = cv2.imread(ori_img_path,3)
         print("Percorso senza rumore")
         print(ori_img_path)
 
         
-        #to garantee that the "original" dataset has the same png extension as the other dataset
-        #it can be changed depending on your needs
-        base_name, _ = os.path.splitext(filename)
-        filename = base_name + "." + "png"
 
+        """
         #only for jpeg compression
-        #base_name, _ = os.path.splitext(filename)
-        #fin_filename = base_name + "." + "jpg"
-        #filename = fin_filename
-
+        
+        base_name, _ = os.path.splitext(filename)
+        fin_filename = base_name + "." + "jpg"
+        filename = fin_filename
+        fin_img_path = os.path.join(finger_image_directory, filename)
+        fingerprinted = cv2.imread(fin_img_path, 3)
+        """
+        
+        
+        
+        
         fin_img_path = os.path.join(finger_image_directory, filename)
         fingerprinted = cv2.imread(fin_img_path, 3)
         print("Percorso con rumore")
         print(fin_img_path)
+        
 
         #to use only if the image has a size different from 128x128
         

@@ -3,6 +3,7 @@ import os
 from PIL import Image
 import torch
 from models import StegaStampDecoder
+from accuracy import main as maina
 import matplotlib.pyplot as plt
 
 
@@ -25,18 +26,21 @@ quant_prec_array = []
 
 device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
-decoder_path = "/media/giacomo/volume/old/trained_byme/dec.pth"
+#decoder_path = "/media/giacomo/volume/test_yuv/primo/checkpoints/dec.pth"
+decoder_path = "/media/giacomo/volume/yuv_base/enc-dec/checkpoints/dec.pth"
+
 
 #fingerprint embedded in the images
 fingerprint = torch.tensor([0,1,0,0,0,1,0,0,0,1,0,0,0,0,1,0,1,1,1,0,1,0,1,1,1,1,1,1,1,1,0,0,1,1,1,
                             0,1,0,0,0,0,0,1,1,1,1,1,0,1,1,0,1,0,1,0,1,1,0,0,0,0,0,0,0,0,1,1,0,1,1,1,1,
                             0,1,0,1,1,1,0,1,0,1,0,1,0,0,1,0,1,1,1,1,1,1,1,1,1,1,1,0])
 
-image_directory = '/media/giacomo/volume/old/stylegan2_gen_50k_config-e_25'
+#image_directory = '/media/giacomo/volume/test_yuv/stylegan2_gen_50k_config-e_25'
+image_directory = '/media/giacomo/volume/yuv_base/stylegan2_gen_50k_config-e_75_seed42'
 
 
 IMAGE_RESOLUTION = 128
-IMAGE_CHANNELS = 3
+IMAGE_CHANNELS = 1
 FINGERPRINT_SIZE = len(fingerprint)
 
 RevealNet = StegaStampDecoder( #decoder and parameter passing
@@ -61,47 +65,20 @@ step = 10
 while i <= end:
 
     j=0
-    for filename in os.listdir(image_directory):
 
-        j += 1 #to count the number of images in the folder
+    RevealNet = StegaStampDecoder( #decoder and parameter passing
+            IMAGE_RESOLUTION, IMAGE_CHANNELS, fingerprint_size=FINGERPRINT_SIZE
+        )
 
-        #if j == 10: break;
-        
-        if filename.endswith(('.png', '.jpg', '.jpeg', '.bmp', '.tiff')):
+    state_dict = torch.load(decoder_path, map_location=device)
+    RevealNet.load_state_dict(state_dict)
+    RevealNet.to(device)  # Move the model to the device
+    RevealNet.eval()      # Set the model to evaluation mode
 
-            print("Precision")
-            print(i)
-            
-
-            RevealNet = StegaStampDecoder( #decoder and parameter passing
-                IMAGE_RESOLUTION, IMAGE_CHANNELS, fingerprint_size=FINGERPRINT_SIZE
-            )
-
-            state_dict = torch.load(decoder_path, map_location=device)
-            RevealNet.load_state_dict(state_dict)
-            RevealNet.to(device)  # Move the model to the device
-            RevealNet.eval()      # Set the model to evaluation mode
-
-            quantize_weights(RevealNet, i)
-
-            img_path = os.path.join(image_directory, filename)
-            img = Image.open(img_path)
-            img_array = np.array(img)
-            image_tensor = torch.from_numpy(img_array).permute(2, 0, 1).float().to(device)
-
-            detected_fingerprints = RevealNet(image_tensor.unsqueeze(0))
-            detected_fingerprints = (detected_fingerprints > 0).long()
-        
-            print(detected_fingerprints)
-            bitwise_accuracy += (detected_fingerprints == fingerprint).float().mean(dim=1).sum().item()
-
-            img_array = np.array(img)
-        
-            print("img_array")
-            print(img_array)
-            
+    quantize_weights(RevealNet, i)
+                   
     quant_prec_array.append(i)
-    bitwise_accuracy = bitwise_accuracy/j
+    bitwise_accuracy = maina(image_directory, decoder_path, RevealNet )
     accuracy_array.append(bitwise_accuracy)
 
     i = i*step

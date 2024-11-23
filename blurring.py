@@ -6,10 +6,11 @@ import cv2
 import torch
 from models import StegaStampDecoder
 import matplotlib.pyplot as plt
-from psnr import main
+from psnr import main as mainp
+from accuracy import main as maina
 from graphs import plotting
 
-
+#To do: pulire il codice dato che tante cose sono inutili visto che l'accuratezza si calcola sulle immagini nella cartella
 
 accuracy_array = []
 size_array = []
@@ -18,18 +19,18 @@ psnr_array = []
 
 device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
-decoder_path = "/media/giacomo/volume/old/trained_byme/dec.pth"
+decoder_path = "/media/giacomo/volume/yuv_base/enc-dec/checkpoints/dec.pth"
 
 #fingerprint embedded in the images
 fingerprint = torch.tensor([0,1,0,0,0,1,0,0,0,1,0,0,0,0,1,0,1,1,1,0,1,0,1,1,1,1,1,1,1,1,0,0,1,1,1,
                             0,1,0,0,0,0,0,1,1,1,1,1,0,1,1,0,1,0,1,0,1,1,0,0,0,0,0,0,0,0,1,1,0,1,1,1,1,
                             0,1,0,1,1,1,0,1,0,1,0,1,0,0,1,0,1,1,1,1,1,1,1,1,1,1,1,0])
 
-image_directory = '/media/giacomo/volume/old/stylegan2_gen_50k_config-e_25'
+image_directory = '/media/giacomo/volume/yuv_base/stylegan2_gen_50k_config-e_75_seed42'
 
 
 IMAGE_RESOLUTION = 128
-IMAGE_CHANNELS = 3
+IMAGE_CHANNELS = 1
 FINGERPRINT_SIZE = len(fingerprint)
 
 RevealNet = StegaStampDecoder( #decoder and parameter passing
@@ -44,8 +45,10 @@ RevealNet.eval()      # Set the model to evaluation mode
 bitwise_accuracy = 0
 fingerprint = (fingerprint > 0).long().to(device)
 
-img_noise_path=" "
-for i in range(1,75,8):
+img_blurred_path=" "
+#for i in range(1,75,8):
+k=0
+for i in range(1,9):
 
     k = i;
 
@@ -59,7 +62,7 @@ for i in range(1,75,8):
         print(j)
 
 
-        #if j == 11: break #to ensure a little generation to try the code
+        #if j == 10: break #to ensure a little generation to try the code
         
         if filename.endswith(('.png', '.jpg', '.jpeg', '.bmp', '.tiff')):
             
@@ -71,41 +74,49 @@ for i in range(1,75,8):
 
             # Convert BGR to RGB
             img_blurred_rgb = cv2.cvtColor(blur, cv2.COLOR_BGR2RGB)
+            img_blurred_yuv = cv2.cvtColor(blur, cv2.COLOR_BGR2YUV)
+
+            y_channel, u_channel, v_channel = cv2.split(img_blurred_yuv)
+            img_blurred_yuv = y_channel
+
+            print("img-noise-yuv")
+            print(img_blurred_yuv.shape)
 
             img_blurred_rgb_array = np.array(img_blurred_rgb) #to convert in array
             image_blurred_rgb_tensor = torch.from_numpy(img_blurred_rgb_array).permute(2, 0, 1).float().to(device) #to convert in tensor
 
-            detected_fingerprints = RevealNet(image_blurred_rgb_tensor.unsqueeze(0))
+            image_blurred_yuv_tensor = torch.from_numpy(img_blurred_yuv).float().unsqueeze(0)
+            print("dimensione tensore per firma")
+            print(image_blurred_yuv_tensor.shape)
+            y_channel_list = []
+            y_channel_list.append(image_blurred_yuv_tensor)
+
+           
+            images_y_batch = []
+            images_y_batch = torch.stack(y_channel_list).to(device)
+
+            print("batch shape")
+            print(images_y_batch.shape)
+
+            detected_fingerprints = RevealNet(images_y_batch)
             detected_fingerprints = (detected_fingerprints > 0).long()
         
             #print(detected_fingerprints)
-            bitwise_accuracy += (detected_fingerprints == fingerprint).float().mean(dim=1).sum().item()
+            
 
-            img_noise_path = os.path.join("/media/giacomo/volume/old/robustness/gau_blurring_size_1-73_style2_25_50k", f"{k}")
-            os.makedirs(img_noise_path , exist_ok=True)
-            png_filename = os.path.join(img_noise_path, filename)
+            #img_blurred_path = os.path.join("/media/giacomo/volume/test_yuv/robustness/gau_blurring_size_1-73_style2_25_50k", f"{k}")
+            img_blurred_path = os.path.join("/media/giacomo/volume/yuv_base/robustness_75_seed42/gau_blurring_size_1-9_style2_75_50k", f"{k}")
+            os.makedirs(img_blurred_path , exist_ok=True)
+            png_filename = os.path.join(img_blurred_path, filename)
             PIL.Image.fromarray(img_blurred_rgb_array, "RGB").save(png_filename)
+            l=k
             
-            """
-            usefull to visualize what we are doing. Use it only with few images to try the code
-
-            cv2.imshow("original image", img)
-            cv2.waitKey(0)
-            cv2.imshow("image with noise", img_noised)
-            cv2.waitKey(0)
-
-            img_path_saved = os.path.join("/media/giacomo/hdd_ubuntu/gau_noise_std_0-100_style2_50k", filename)
-            img_saved = cv2.imread(img_path_saved,3)
-
-            cv2.imshow("saved image", img_saved)
-            cv2.waitKey(0)
             
-            """
             
-    psnr = main(image_directory, img_noise_path)
+    psnr = mainp(image_directory, img_blurred_path)
     psnr_array.append(psnr)
-    size_array.append(i)
-    bitwise_accuracy = bitwise_accuracy/j
+    size_array.append(k)
+    bitwise_accuracy = maina(img_blurred_path, decoder_path)
     accuracy_array.append(bitwise_accuracy)
     
 
@@ -115,18 +126,4 @@ print(psnr_array)
 
 plotting(size_array,accuracy_array,psnr_array,"Kernel size","Bitwise accuracy","PSNR (dB)","Gaussian blurring")
 
-"""
-plt.plot(size_array, accuracy_array, marker='s', linestyle='--', color='black', markerfacecolor='red', markeredgecolor='red')
-plt.grid(color='grey', linestyle='-', linewidth=0.5)
 
-plt.yticks([0.4,0.5,0.6,0.7,0.8,0.9,1.0]) #to fix the y scale but it can be used also accuracy_array
-plt.xticks([0,5,10,15,20,25,30,35,40,45,50,55,60,65,70,75]) #to fix the x scale
-
-#figure, axis = plt.subplots(1, 1)
-#figure.suptitle("Gaussian noise")
-#axis.plot(std_array, accuracy_array)
-plt.title("Gaussian blurring", fontweight="bold")
-plt.ylabel("Bitwise accuracy")
-plt.xlabel("Kernel size")
-plt.show()
-"""

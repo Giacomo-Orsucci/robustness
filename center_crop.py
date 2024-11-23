@@ -7,7 +7,8 @@ import torch
 from models import StegaStampDecoder
 import matplotlib.pyplot as plt
 from graphs import plotting
-from psnr import main
+from psnr import main as mainp
+from accuracy import main as maina
 
 accuracy_array = []
 crop_size_array = []
@@ -15,31 +16,17 @@ psnr_array = []
 
 device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
-decoder_path = "/media/giacomo/volume/old/trained_byme/dec.pth"
+decoder_path = "/media/giacomo/volume/yuv_base/enc-dec/checkpoints/dec.pth"
 
 #fingerprint embedded in the images
 fingerprint = torch.tensor([0,1,0,0,0,1,0,0,0,1,0,0,0,0,1,0,1,1,1,0,1,0,1,1,1,1,1,1,1,1,0,0,1,1,1,
                             0,1,0,0,0,0,0,1,1,1,1,1,0,1,1,0,1,0,1,0,1,1,0,0,0,0,0,0,0,0,1,1,0,1,1,1,1,
                             0,1,0,1,1,1,0,1,0,1,0,1,0,0,1,0,1,1,1,1,1,1,1,1,1,1,1,0])
 
-image_directory = '/media/giacomo/volume/old/stylegan2_gen_50k_config-e_25'
+image_directory = '/media/giacomo/volume/yuv_base/stylegan2_gen_50k_config-e_75_seed42'
 
-
-IMAGE_RESOLUTION = 128
-IMAGE_CHANNELS = 3
-FINGERPRINT_SIZE = len(fingerprint)
-
-RevealNet = StegaStampDecoder( #decoder and parameter passing
-    IMAGE_RESOLUTION, IMAGE_CHANNELS, fingerprint_size=FINGERPRINT_SIZE
-)
-
-state_dict = torch.load(decoder_path, map_location=device)
-RevealNet.load_state_dict(state_dict)
-RevealNet.to(device)  # Move the model to the device
-RevealNet.eval()      # Set the model to evaluation mode
 
 bitwise_accuracy = 0
-fingerprint = (fingerprint > 0).long().to(device)
 
 
 for i in range(128,10,-8):
@@ -82,32 +69,17 @@ for i in range(128,10,-8):
             img_final.paste(img_cropped, (left_pad, top_pad))
 
 
-            img_crop_path = os.path.join("/media/giacomo/volume/old/robustness/jpeg_cropsize_128-63_style2_50k", f"{i}") 
+            img_crop_path = os.path.join("/media/giacomo/volume/yuv_base/robustness_75_seed42/cropsize_128-63_style2_50k", f"{i}") 
             os.makedirs(img_crop_path, exist_ok=True)
             img_filename = os.path.join(img_crop_path, filename)
             img_final.save(img_filename)
 
-            img_path = os.path.join(img_crop_path, filename)
-            img = Image.open(img_path)
-
-            img_array = np.array(img)
-            image_tensor = torch.from_numpy(img_array).permute(2, 0, 1).float().to(device)
-
-            detected_fingerprints = RevealNet(image_tensor.unsqueeze(0))
-            detected_fingerprints = (detected_fingerprints > 0).long()
-        
-            print(detected_fingerprints)
-            bitwise_accuracy += (detected_fingerprints == fingerprint).float().mean(dim=1).sum().item()
-
-            img_array = np.array(img)
-        
-            print("img_array")
-            print(img_array)
             
-    psnr = main(image_directory, img_crop_path)
+
+    psnr = mainp(image_directory, img_crop_path)
     psnr_array.append(psnr)
     crop_size_array.append(i)
-    bitwise_accuracy = bitwise_accuracy/j
+    bitwise_accuracy = maina(img_crop_path, decoder_path)
     accuracy_array.append(bitwise_accuracy)
     
 
