@@ -18,14 +18,30 @@ psnr_array = []
 
 device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
-decoder_path = "/media/giacomo/volume/old/trained_byme/dec.pth"
+#decoder_path = "/media/giacomo/volume/old/trained_byme/dec.pth"
+decoder_path = '/media/giacomo/volume/no_rand/enc-dec_1_20/checkpoints/dec.pth'
 
+
+
+"""
 #fingerprint embedded in the images
 fingerprint = torch.tensor([0,1,0,0,0,1,0,0,0,1,0,0,0,0,1,0,1,1,1,0,1,0,1,1,1,1,1,1,1,1,0,0,1,1,1,
                             0,1,0,0,0,0,0,1,1,1,1,1,0,1,1,0,1,0,1,0,1,1,0,0,0,0,0,0,0,0,1,1,0,1,1,1,1,
                             0,1,0,1,1,1,0,1,0,1,0,1,0,0,1,0,1,1,1,1,1,1,1,1,1,1,1,0])
 
-image_directory = '/media/giacomo/volume/old/stylegan2_gen_50k_config-e_25'
+"""
+
+fingerprint = torch.tensor([0,1,0,0,1,0,1,1,1,0,0,0,0,0,0,0,1,0,1,0,0,0,1,1,1,1,0,1,0,0,1,1,1,1,1,1,1,1,0,
+                            1,1,0,1,0,0,1,0,0,0,0,1,0,1,0,0,0,0,1,1,0,0,1,0,0,0,1,1,1,0,0,1,1,1,1,0,1,0,1,
+                            0,1,1,1,1,0,1,0,0,0,0,1,0,0,0,1,1,1,1,0,0,1]).to(device) #embedded fingerprint with seed 42_3
+
+
+
+#image_directory = '/media/giacomo/volume/old/stylegan2_gen_50k_config-e_25'
+
+
+image_directory='/media/giacomo/volume/no_rand/stylegan2_gen_50k_config-e_25_seed42_3'
+
 
 
 IMAGE_RESOLUTION = 128
@@ -59,7 +75,7 @@ for i in range(1,75,8):
         print(j)
 
 
-        #if j == 11: break #to ensure a little generation to try the code
+        #if j == 10: break #to ensure a little generation to try the code
         
         if filename.endswith(('.png', '.jpg', '.jpeg', '.bmp', '.tiff')):
             
@@ -81,7 +97,7 @@ for i in range(1,75,8):
             #print(detected_fingerprints)
             bitwise_accuracy += (detected_fingerprints == fingerprint).float().mean(dim=1).sum().item()
 
-            img_noise_path = os.path.join("/media/giacomo/volume/old/robustness/gau_blurring_size_1-73_style2_25_50k", f"{k}")
+            img_noise_path = os.path.join("/media/giacomo/volume/no_rand/robustness/gau_blurring_size_1-73_style2_25_50k", f"{k}")
             os.makedirs(img_noise_path , exist_ok=True)
             png_filename = os.path.join(img_noise_path, filename)
             PIL.Image.fromarray(img_blurred_rgb_array, "RGB").save(png_filename)

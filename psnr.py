@@ -63,10 +63,13 @@ def main(original_image_directory, finger_image_directory):
         base_name, _ = os.path.splitext(filename)
         filename = base_name + "." + "png"
 
+        
+        """
         #only for jpeg compression
-        #base_name, _ = os.path.splitext(filename)
-        #fin_filename = base_name + "." + "jpg"
-        #filename = fin_filename
+        base_name, _ = os.path.splitext(filename)
+        fin_filename = base_name + "." + "jpg"
+        filename = fin_filename
+        """
 
         fin_img_path = os.path.join(finger_image_directory, filename)
         fingerprinted = cv2.imread(fin_img_path, 3)

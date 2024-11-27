@@ -15,14 +15,22 @@ psnr_array = []
 
 device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
-decoder_path = "/media/giacomo/volume/old/trained_byme/dec.pth"
+#decoder_path = "/media/giacomo/volume/old/trained_byme/dec.pth"
+decoder_path = '/media/giacomo/volume/no_rand/enc-dec_1_20/checkpoints/dec.pth'
 
+"""
 #fingerprint embedded in the images
 fingerprint = torch.tensor([0,1,0,0,0,1,0,0,0,1,0,0,0,0,1,0,1,1,1,0,1,0,1,1,1,1,1,1,1,1,0,0,1,1,1,
                             0,1,0,0,0,0,0,1,1,1,1,1,0,1,1,0,1,0,1,0,1,1,0,0,0,0,0,0,0,0,1,1,0,1,1,1,1,
                             0,1,0,1,1,1,0,1,0,1,0,1,0,0,1,0,1,1,1,1,1,1,1,1,1,1,1,0])
+"""
+fingerprint = torch.tensor([0,1,0,0,1,0,1,1,1,0,0,0,0,0,0,0,1,0,1,0,0,0,1,1,1,1,0,1,0,0,1,1,1,1,1,1,1,1,0,
+                            1,1,0,1,0,0,1,0,0,0,0,1,0,1,0,0,0,0,1,1,0,0,1,0,0,0,1,1,1,0,0,1,1,1,1,0,1,0,1,
+                            0,1,1,1,1,0,1,0,0,0,0,1,0,0,0,1,1,1,1,0,0,1]).to(device) #embedded fingerprint with seed 42_3
 
-image_directory = '/media/giacomo/volume/old/stylegan2_gen_50k_config-e_25'
+#image_directory = '/media/giacomo/volume/old/stylegan2_gen_50k_config-e_25'
+image_directory='/media/giacomo/volume/no_rand/stylegan2_gen_50k_config-e_25_seed42_3'
+
 
 
 IMAGE_RESOLUTION = 128
@@ -82,7 +90,7 @@ for i in range(128,10,-8):
             img_final.paste(img_cropped, (left_pad, top_pad))
 
 
-            img_crop_path = os.path.join("/media/giacomo/volume/old/robustness/jpeg_cropsize_128-63_style2_50k", f"{i}") 
+            img_crop_path = os.path.join("/media/giacomo/volume/no_rand/robustness/jpeg_cropsize_128-63_style2_50k", f"{i}") 
             os.makedirs(img_crop_path, exist_ok=True)
             img_filename = os.path.join(img_crop_path, filename)
             img_final.save(img_filename)

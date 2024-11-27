@@ -21,15 +21,24 @@ psnr_array = []
 device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
 #decoder_path = "/home/giacomo/Desktop/enc_dec_pretrained_celeba/dec.pth"
-decoder_path = "/media/giacomo/volume/old/trained_byme/dec.pth"
-
+#decoder_path = "/media/giacomo/volume/old/trained_byme/dec.pth"
+decoder_path = '/media/giacomo/volume/no_rand/enc-dec_1_20/checkpoints/dec.pth'
+"""
 #fingerprint embedded in the images
 fingerprint = torch.tensor([0,1,0,0,0,1,0,0,0,1,0,0,0,0,1,0,1,1,1,0,1,0,1,1,1,1,1,1,1,1,0,0,1,1,1,
                             0,1,0,0,0,0,0,1,1,1,1,1,0,1,1,0,1,0,1,0,1,1,0,0,0,0,0,0,0,0,1,1,0,1,1,1,1,
                             0,1,0,1,1,1,0,1,0,1,0,1,0,0,1,0,1,1,1,1,1,1,1,1,1,1,1,0])
 
+"""
+
+fingerprint = torch.tensor([0,1,0,0,1,0,1,1,1,0,0,0,0,0,0,0,1,0,1,0,0,0,1,1,1,1,0,1,0,0,1,1,1,1,1,1,1,1,0,
+                            1,1,0,1,0,0,1,0,0,0,0,1,0,1,0,0,0,0,1,1,0,0,1,0,0,0,1,1,1,0,0,1,1,1,1,0,1,0,1,
+                            0,1,1,1,1,0,1,0,0,0,0,1,0,0,0,1,1,1,1,0,0,1]).to(device) #embedded fingerprint with seed 42_3
+
 #image_directory = '/media/giacomo/hdd_ubuntu/stylegan2_gen_50k'
-image_directory = '/media/giacomo/volume/old/stylegan2_gen_50k_config-e_25'
+#image_directory = '/media/giacomo/volume/old/stylegan2_gen_50k_config-e_25'
+image_directory='/media/giacomo/volume/no_rand/stylegan2_gen_50k_config-e_25_seed42_3'
+
 
 
 
@@ -92,7 +101,7 @@ for i in range(11):
             bitwise_accuracy += (detected_fingerprints == fingerprint).float().mean(dim=1).sum().item()
             
 
-            img_noise_path = os.path.join("/media/giacomo/volume/old/robustness/app", f"{std}") 
+            img_noise_path = os.path.join("/media/giacomo/volume/no_rand/robustness/gau_noise_std_0-100_style2_25_50k", f"{std}") 
             os.makedirs(img_noise_path, exist_ok=True)
             png_filename = os.path.join(img_noise_path, filename)
             PIL.Image.fromarray(img_noised_rgb, "RGB").save(png_filename)

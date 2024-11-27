@@ -16,14 +16,23 @@ psnr_array = []
 
 device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
-decoder_path = "/media/giacomo/volume/old/trained_byme/dec.pth"
+#decoder_path = "/media/giacomo/volume/old/trained_byme/dec.pth"
+decoder_path = '/media/giacomo/volume/no_rand/enc-dec_1_20/checkpoints/dec.pth'
 
+"""
 #fingerprint embedded in the images
 fingerprint = torch.tensor([0,1,0,0,0,1,0,0,0,1,0,0,0,0,1,0,1,1,1,0,1,0,1,1,1,1,1,1,1,1,0,0,1,1,1,
                             0,1,0,0,0,0,0,1,1,1,1,1,0,1,1,0,1,0,1,0,1,1,0,0,0,0,0,0,0,0,1,1,0,1,1,1,1,
                             0,1,0,1,1,1,0,1,0,1,0,1,0,0,1,0,1,1,1,1,1,1,1,1,1,1,1,0])
+"""
 
-image_directory = '/media/giacomo/volume/old/stylegan2_gen_50k_config-e_25'
+fingerprint = torch.tensor([0,1,0,0,1,0,1,1,1,0,0,0,0,0,0,0,1,0,1,0,0,0,1,1,1,1,0,1,0,0,1,1,1,1,1,1,1,1,0,
+                            1,1,0,1,0,0,1,0,0,0,0,1,0,1,0,0,0,0,1,1,0,0,1,0,0,0,1,1,1,0,0,1,1,1,1,0,1,0,1,
+                            0,1,1,1,1,0,1,0,0,0,0,1,0,0,0,1,1,1,1,0,0,1]).to(device) #embedded fingerprint with seed 42_3
+
+#image_directory = '/media/giacomo/volume/old/stylegan2_gen_50k_config-e_25'
+image_directory='/media/giacomo/volume/no_rand/stylegan2_gen_50k_config-e_25_seed42_3'
+
 img_compressed_path = ""
 
 
@@ -63,7 +72,7 @@ for i in range(100,9,-10):
             # Convert BGR to RGB
             img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
 
-            img_compressed_path = os.path.join("/media/giacomo/volume/old/robustness/jpeg_compression_quality_100-10_style2_50k", f"{i}")
+            img_compressed_path = os.path.join("/media/giacomo/volume/no_rand/robustness/jpeg_compression_quality_100-10_style2_50k", f"{i}")
             os.makedirs(img_compressed_path, exist_ok=True)
             png_filename = os.path.join(img_compressed_path, filename)
 
