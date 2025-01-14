@@ -3,7 +3,7 @@ import torch
 from torch import nn
 from torch.nn.functional import relu, sigmoid
 
-
+#imported code to use the decoder
 class StegaStampEncoder(nn.Module):
     def __init__( #encoder constructor (embeds the fingerprint)
         self,

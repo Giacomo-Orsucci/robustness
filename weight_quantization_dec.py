@@ -6,13 +6,6 @@ from models import StegaStampDecoder
 import matplotlib.pyplot as plt
 
 
-#In the article this is applied to the ProGAN network and images generation.
-#I use StyleGAN2 instead of ProGAN because the images generated with it showed a better bitwise_accuracy.
-#However, in the article this robustness study is applied to the network model, but
-#in my opinion is more worth to study how this affect the decoder, in order to study
-#how the quantization precision can affect it in a malicious point of view.
-
-
 #Function to quantize model weights to a specific precision
 def quantize_weights(model, precision):
     for param in model.parameters():
@@ -25,22 +18,18 @@ quant_prec_array = []
 
 device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
-#decoder_path = "/media/giacomo/volume/old/trained_byme/dec.pth"
-decoder_path = '/media/giacomo/volume/no_rand/enc-dec_1_20/checkpoints/dec.pth'
+#insert the path of the decoder 
+decoder_path = ''
 
 
 #fingerprint embedded in the images
-"""
-fingerprint = torch.tensor([0,1,0,0,0,1,0,0,0,1,0,0,0,0,1,0,1,1,1,0,1,0,1,1,1,1,1,1,1,1,0,0,1,1,1,
-                            0,1,0,0,0,0,0,1,1,1,1,1,0,1,1,0,1,0,1,0,1,1,0,0,0,0,0,0,0,0,1,1,0,1,1,1,1,
-                            0,1,0,1,1,1,0,1,0,1,0,1,0,0,1,0,1,1,1,1,1,1,1,1,1,1,1,0])
-"""
+
 fingerprint = torch.tensor([0,1,0,0,1,0,1,1,1,0,0,0,0,0,0,0,1,0,1,0,0,0,1,1,1,1,0,1,0,0,1,1,1,1,1,1,1,1,0,
                             1,1,0,1,0,0,1,0,0,0,0,1,0,1,0,0,0,0,1,1,0,0,1,0,0,0,1,1,1,0,0,1,1,1,1,0,1,0,1,
                             0,1,1,1,1,0,1,0,0,0,0,1,0,0,0,1,1,1,1,0,0,1]).to(device) #embedded fingerprint with seed 42_3
 
-#image_directory = '/media/giacomo/volume/old/stylegan2_gen_50k_config-e_25'
-image_directory='/media/giacomo/volume/no_rand/stylegan2_gen_50k_config-e_25_seed42_3'
+#insert the path of the images to perturbate
+image_directory=''
 
 
 
@@ -78,10 +67,6 @@ while i <= end:
         
         if filename.endswith(('.png', '.jpg', '.jpeg', '.bmp', '.tiff')):
 
-            print("Precision")
-            print(i)
-            
-
             RevealNet = StegaStampDecoder( #decoder and parameter passing
                 IMAGE_RESOLUTION, IMAGE_CHANNELS, fingerprint_size=FINGERPRINT_SIZE
             )
@@ -101,23 +86,16 @@ while i <= end:
             detected_fingerprints = RevealNet(image_tensor.unsqueeze(0))
             detected_fingerprints = (detected_fingerprints > 0).long()
         
-            print(detected_fingerprints)
             bitwise_accuracy += (detected_fingerprints == fingerprint).float().mean(dim=1).sum().item()
 
             img_array = np.array(img)
         
-            print("img_array")
-            print(img_array)
             
     quant_prec_array.append(i)
     bitwise_accuracy = bitwise_accuracy/j
     accuracy_array.append(bitwise_accuracy)
 
     i = i*step
-    
-
-print(quant_prec_array)
-print(accuracy_array)
 
 plt.plot(quant_prec_array, accuracy_array, marker='s', linestyle='--', color='black', markerfacecolor='red', markeredgecolor='red')
 plt.grid(color='grey', linestyle='-', linewidth=0.5)

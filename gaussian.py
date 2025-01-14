@@ -20,24 +20,16 @@ psnr_array = []
 
 device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
-#decoder_path = "/home/giacomo/Desktop/enc_dec_pretrained_celeba/dec.pth"
-#decoder_path = "/media/giacomo/volume/old/trained_byme/dec.pth"
-decoder_path = '/media/giacomo/volume/no_rand/enc-dec_1_20/checkpoints/dec.pth'
-"""
-#fingerprint embedded in the images
-fingerprint = torch.tensor([0,1,0,0,0,1,0,0,0,1,0,0,0,0,1,0,1,1,1,0,1,0,1,1,1,1,1,1,1,1,0,0,1,1,1,
-                            0,1,0,0,0,0,0,1,1,1,1,1,0,1,1,0,1,0,1,0,1,1,0,0,0,0,0,0,0,0,1,1,0,1,1,1,1,
-                            0,1,0,1,1,1,0,1,0,1,0,1,0,0,1,0,1,1,1,1,1,1,1,1,1,1,1,0])
+#insert the path of the decoder 
+decoder_path = ''
 
-"""
 
 fingerprint = torch.tensor([0,1,0,0,1,0,1,1,1,0,0,0,0,0,0,0,1,0,1,0,0,0,1,1,1,1,0,1,0,0,1,1,1,1,1,1,1,1,0,
                             1,1,0,1,0,0,1,0,0,0,0,1,0,1,0,0,0,0,1,1,0,0,1,0,0,0,1,1,1,0,0,1,1,1,1,0,1,0,1,
                             0,1,1,1,1,0,1,0,0,0,0,1,0,0,0,1,1,1,1,0,0,1]).to(device) #embedded fingerprint with seed 42_3
 
-#image_directory = '/media/giacomo/hdd_ubuntu/stylegan2_gen_50k'
-#image_directory = '/media/giacomo/volume/old/stylegan2_gen_50k_config-e_25'
-image_directory='/media/giacomo/volume/no_rand/stylegan2_gen_50k_config-e_25_seed42_3'
+#insert the path of the images to perturbate
+image_directory=''
 
 
 
@@ -66,16 +58,12 @@ for i in range(11):
         j += 1 #to count the number of images in the folder
 
         print(j)
-        #if j == 10: break
+        if j == 10: break
         
         if filename.endswith(('.png', '.jpg', '.jpeg', '.bmp', '.tiff')):
             
             img_path = os.path.join(image_directory, filename)
             img = cv2.imread(img_path,3)
-            print("dimensione immagine caricata")
-            print(img.shape)
-            
-            #img = img/255 #if we want the images in greyscale
 
             x, y, channels = img.shape  # Include the third dimension for color channels
 
@@ -97,34 +85,18 @@ for i in range(11):
             detected_fingerprints = RevealNet(image_noised_rgb_tensor.unsqueeze(0))
             detected_fingerprints = (detected_fingerprints > 0).long()
         
-            print(detected_fingerprints)
             bitwise_accuracy += (detected_fingerprints == fingerprint).float().mean(dim=1).sum().item()
             
-
-            img_noise_path = os.path.join("/media/giacomo/volume/no_rand/robustness/gau_noise_std_0-100_style2_25_50k", f"{std}") 
+            #insert the path where to save the perturbated images
+            path_to_save= ""
+            img_noise_path = os.path.join(path_to_save, f"{std}") 
             os.makedirs(img_noise_path, exist_ok=True)
             png_filename = os.path.join(img_noise_path, filename)
             PIL.Image.fromarray(img_noised_rgb, "RGB").save(png_filename)
             
-            """
-            usefull to visualize what we are doing. Use it only with few images to try the code
-
-            cv2.imshow("original image", img)
-            cv2.waitKey(0)
-            cv2.imshow("image with noise", img_noised)
-            cv2.waitKey(0)
-
-            img_path_saved = os.path.join("/media/giacomo/hdd_ubuntu/gau_noise_std_0-100_style2_50k", filename)
-            img_saved = cv2.imread(img_path_saved,3)
-
-            cv2.imshow("saved image", img_saved)
-            cv2.waitKey(0)
             
-            """
             img_array = np.array(img)
         
-            print("img_array")
-            print(img_array)
             
     psnr = main(image_directory, img_noise_path)
     psnr_array.append(psnr)
@@ -132,11 +104,6 @@ for i in range(11):
     std +=10
     bitwise_accuracy = bitwise_accuracy/j
     accuracy_array.append(bitwise_accuracy)
-    
-
-print(std_array)
-print(accuracy_array)
-print(psnr_array)
 
 plotting(std_array,accuracy_array,psnr_array,"Noise std","Bitwise accuracy","PSNR (dB)","Gaussian noise")
 

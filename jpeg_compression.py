@@ -6,8 +6,8 @@ import cv2
 import torch
 from models import StegaStampDecoder
 import matplotlib.pyplot as plt
-from graphs import plotting
-from psnr import main
+from graphs import plotting_center_jpeg
+from psnr import main_j
 
 
 accuracy_array = []
@@ -16,22 +16,17 @@ psnr_array = []
 
 device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
-#decoder_path = "/media/giacomo/volume/old/trained_byme/dec.pth"
-decoder_path = '/media/giacomo/volume/no_rand/enc-dec_1_20/checkpoints/dec.pth'
+#insert the path of the decoder 
+decoder_path = ''
 
-"""
-#fingerprint embedded in the images
-fingerprint = torch.tensor([0,1,0,0,0,1,0,0,0,1,0,0,0,0,1,0,1,1,1,0,1,0,1,1,1,1,1,1,1,1,0,0,1,1,1,
-                            0,1,0,0,0,0,0,1,1,1,1,1,0,1,1,0,1,0,1,0,1,1,0,0,0,0,0,0,0,0,1,1,0,1,1,1,1,
-                            0,1,0,1,1,1,0,1,0,1,0,1,0,0,1,0,1,1,1,1,1,1,1,1,1,1,1,0])
-"""
 
 fingerprint = torch.tensor([0,1,0,0,1,0,1,1,1,0,0,0,0,0,0,0,1,0,1,0,0,0,1,1,1,1,0,1,0,0,1,1,1,1,1,1,1,1,0,
                             1,1,0,1,0,0,1,0,0,0,0,1,0,1,0,0,0,0,1,1,0,0,1,0,0,0,1,1,1,0,0,1,1,1,1,0,1,0,1,
                             0,1,1,1,1,0,1,0,0,0,0,1,0,0,0,1,1,1,1,0,0,1]).to(device) #embedded fingerprint with seed 42_3
 
-#image_directory = '/media/giacomo/volume/old/stylegan2_gen_50k_config-e_25'
-image_directory='/media/giacomo/volume/no_rand/stylegan2_gen_50k_config-e_25_seed42_3'
+#insert the path of the images to perturbate
+
+image_directory=''
 
 img_compressed_path = ""
 
@@ -58,7 +53,7 @@ for i in range(100,9,-10):
     for filename in os.listdir(image_directory):
 
         j += 1 #to count the number of images in the folder
-        #if j==10: break;
+        if j==10: break;
         
         print(j)
         
@@ -67,12 +62,14 @@ for i in range(100,9,-10):
             img_path = os.path.join(image_directory, filename)
             img = cv2.imread(img_path,3)
             
-            #img = img/255 #if we want the images in greyscale
 
             # Convert BGR to RGB
             img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
 
-            img_compressed_path = os.path.join("/media/giacomo/volume/no_rand/robustness/jpeg_compression_quality_100-10_style2_50k", f"{i}")
+            
+            #insert the path where to save the perturbated images
+            path_to_save= ""
+            img_compressed_path = os.path.join(path_to_save, f"{i}")
             os.makedirs(img_compressed_path, exist_ok=True)
             png_filename = os.path.join(img_compressed_path, filename)
 
@@ -93,60 +90,17 @@ for i in range(100,9,-10):
             detected_fingerprints = RevealNet(image_tensor.unsqueeze(0))
             detected_fingerprints = (detected_fingerprints > 0).long()
         
-            #print(detected_fingerprints)
             bitwise_accuracy += (detected_fingerprints == fingerprint).float().mean(dim=1).sum().item()
 
             
-            
-            """
-            usefull to visualize what we are doing. Use it only with few images to try the code
-
-            cv2.imshow("original image", img)
-            cv2.waitKey(0)
-            cv2.imshow("image with noise", img_noised)
-            cv2.waitKey(0)
-
-            img_path_saved = os.path.join("/media/giacomo/hdd_ubuntu/gau_noise_std_0-100_style2_50k", filename)
-            img_saved = cv2.imread(img_path_saved,3)
-
-            cv2.imshow("saved image", img_saved)
-            cv2.waitKey(0)
-            
-            """
             img_array = np.array(img)
         
-            #print("img_array")
-            #print(img_array)
             
-    print(image_directory)
-    print(img_compressed_path)
-    psnr = main(image_directory, img_compressed_path)
+   
+    psnr = main_j(image_directory, img_compressed_path)
     psnr_array.append(psnr)
     compression_rate_array.append(i)
     bitwise_accuracy = bitwise_accuracy/j
     accuracy_array.append(bitwise_accuracy)
-    
 
-print(compression_rate_array)
-print(accuracy_array)
-print(psnr_array)
-
-plotting(compression_rate_array,accuracy_array,psnr_array,"% of quality","Bitwise accuracy","PSNR (dB)","JPEG compression")
-
-"""
-plt.plot(compression_rate_array, accuracy_array, marker='s', linestyle='--', color='black', markerfacecolor='red', markeredgecolor='red')
-plt.grid(color='grey', linestyle='-', linewidth=0.5)
-
-plt.yticks([0.4,0.5,0.6,0.7,0.8,0.9,1.0]) #to fix the y scale but it can be used also accuracy_array
-plt.xticks([100,90,80,70,60,50,40,30,20,10])
-plt.gca().invert_xaxis() 
-
-
-#figure, axis = plt.subplots(1, 1)
-#figure.suptitle("Gaussian noise")
-#axis.plot(std_array, accuracy_array)
-plt.title("JPEG compression", fontweight="bold")
-plt.ylabel("Bitwise accuracy")
-plt.xlabel("% of quality")
-plt.show()
-"""
+plotting_center_jpeg(compression_rate_array,accuracy_array,psnr_array,"% of quality","Bitwise accuracy","PSNR (dB)","JPEG compression")

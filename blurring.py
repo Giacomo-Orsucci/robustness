@@ -18,29 +18,18 @@ psnr_array = []
 
 device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
-#decoder_path = "/media/giacomo/volume/old/trained_byme/dec.pth"
-decoder_path = '/media/giacomo/volume/no_rand/enc-dec_1_20/checkpoints/dec.pth'
+#insert the path of the decoder 
+decoder_path = ''
 
 
-
-"""
-#fingerprint embedded in the images
-fingerprint = torch.tensor([0,1,0,0,0,1,0,0,0,1,0,0,0,0,1,0,1,1,1,0,1,0,1,1,1,1,1,1,1,1,0,0,1,1,1,
-                            0,1,0,0,0,0,0,1,1,1,1,1,0,1,1,0,1,0,1,0,1,1,0,0,0,0,0,0,0,0,1,1,0,1,1,1,1,
-                            0,1,0,1,1,1,0,1,0,1,0,1,0,0,1,0,1,1,1,1,1,1,1,1,1,1,1,0])
-
-"""
 
 fingerprint = torch.tensor([0,1,0,0,1,0,1,1,1,0,0,0,0,0,0,0,1,0,1,0,0,0,1,1,1,1,0,1,0,0,1,1,1,1,1,1,1,1,0,
                             1,1,0,1,0,0,1,0,0,0,0,1,0,1,0,0,0,0,1,1,0,0,1,0,0,0,1,1,1,0,0,1,1,1,1,0,1,0,1,
                             0,1,1,1,1,0,1,0,0,0,0,1,0,0,0,1,1,1,1,0,0,1]).to(device) #embedded fingerprint with seed 42_3
 
 
-
-#image_directory = '/media/giacomo/volume/old/stylegan2_gen_50k_config-e_25'
-
-
-image_directory='/media/giacomo/volume/no_rand/stylegan2_gen_50k_config-e_25_seed42_3'
+#insert the path of the images to perturbate
+image_directory=''
 
 
 
@@ -72,10 +61,8 @@ for i in range(1,75,8):
     for filename in os.listdir(image_directory):
 
         j += 1 #to count the number of images in the folder
-        print(j)
-
-
-        #if j == 10: break #to ensure a little generation to try the code
+       
+        if j == 10: break #to ensure a little generation to try the code
         
         if filename.endswith(('.png', '.jpg', '.jpeg', '.bmp', '.tiff')):
             
@@ -94,29 +81,15 @@ for i in range(1,75,8):
             detected_fingerprints = RevealNet(image_blurred_rgb_tensor.unsqueeze(0))
             detected_fingerprints = (detected_fingerprints > 0).long()
         
-            #print(detected_fingerprints)
             bitwise_accuracy += (detected_fingerprints == fingerprint).float().mean(dim=1).sum().item()
 
-            img_noise_path = os.path.join("/media/giacomo/volume/no_rand/robustness/gau_blurring_size_1-73_style2_25_50k", f"{k}")
+            #insert the path where to save the perturbated images
+            path_to_save= ""
+            img_noise_path = os.path.join(path_to_save, f"{k}")
             os.makedirs(img_noise_path , exist_ok=True)
             png_filename = os.path.join(img_noise_path, filename)
             PIL.Image.fromarray(img_blurred_rgb_array, "RGB").save(png_filename)
             
-            """
-            usefull to visualize what we are doing. Use it only with few images to try the code
-
-            cv2.imshow("original image", img)
-            cv2.waitKey(0)
-            cv2.imshow("image with noise", img_noised)
-            cv2.waitKey(0)
-
-            img_path_saved = os.path.join("/media/giacomo/hdd_ubuntu/gau_noise_std_0-100_style2_50k", filename)
-            img_saved = cv2.imread(img_path_saved,3)
-
-            cv2.imshow("saved image", img_saved)
-            cv2.waitKey(0)
-            
-            """
             
     psnr = main(image_directory, img_noise_path)
     psnr_array.append(psnr)
@@ -124,25 +97,5 @@ for i in range(1,75,8):
     bitwise_accuracy = bitwise_accuracy/j
     accuracy_array.append(bitwise_accuracy)
     
-
-print(size_array)
-print(accuracy_array)
-print(psnr_array)
-
 plotting(size_array,accuracy_array,psnr_array,"Kernel size","Bitwise accuracy","PSNR (dB)","Gaussian blurring")
 
-"""
-plt.plot(size_array, accuracy_array, marker='s', linestyle='--', color='black', markerfacecolor='red', markeredgecolor='red')
-plt.grid(color='grey', linestyle='-', linewidth=0.5)
-
-plt.yticks([0.4,0.5,0.6,0.7,0.8,0.9,1.0]) #to fix the y scale but it can be used also accuracy_array
-plt.xticks([0,5,10,15,20,25,30,35,40,45,50,55,60,65,70,75]) #to fix the x scale
-
-#figure, axis = plt.subplots(1, 1)
-#figure.suptitle("Gaussian noise")
-#axis.plot(std_array, accuracy_array)
-plt.title("Gaussian blurring", fontweight="bold")
-plt.ylabel("Bitwise accuracy")
-plt.xlabel("Kernel size")
-plt.show()
-"""

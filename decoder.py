@@ -1,3 +1,8 @@
+
+
+"""
+#test code
+
 import torch
 from models import StegaStampDecoder
 import os
@@ -5,9 +10,9 @@ from PIL import Image
 import numpy as np
 
 device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
-#image_directory = "/media/giacomo/hdd_ubuntu/stylegan2_gen_noised_0.1"
-image_directory = "/media/giacomo/hdd_ubuntu/prova_gen"
-decoder_path = "/home/giacomo/Desktop/enc_dec_pretrained_celeba/dec.pth"
+
+image_directory = ""
+decoder_path = ""
 fingerprint = torch.tensor([0,1,0,0,0,1,0,0,0,1,0,0,0,0,1,0,1,1,1,0,1,0,1,1,1,1,1,1,1,1,0,0,1,1,1,
                             0,1,0,0,0,0,0,1,1,1,1,1,0,1,1,0,1,0,1,0,1,1,0,0,0,0,0,0,0,0,1,1,0,1,1,1,1,
                             0,1,0,1,1,1,0,1,0,1,0,1,0,0,1,0,1,1,1,1,1,1,1,1,1,1,1,0])#trovata a mano sulla base dell'enc pretrained
@@ -63,4 +68,4 @@ bitwise_accuracy = bitwise_accuracy / NUM_IMAGES
 print(bitwise_accuracy)
 
        
-        
+"""

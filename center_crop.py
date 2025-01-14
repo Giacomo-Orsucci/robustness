@@ -6,7 +6,7 @@ import cv2
 import torch
 from models import StegaStampDecoder
 import matplotlib.pyplot as plt
-from graphs import plotting
+from graphs import plotting_center_jpeg
 from psnr import main
 
 accuracy_array = []
@@ -15,22 +15,16 @@ psnr_array = []
 
 device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
-#decoder_path = "/media/giacomo/volume/old/trained_byme/dec.pth"
-decoder_path = '/media/giacomo/volume/no_rand/enc-dec_1_20/checkpoints/dec.pth'
+#insert the path of the decoder 
+decoder_path = ''
 
-"""
-#fingerprint embedded in the images
-fingerprint = torch.tensor([0,1,0,0,0,1,0,0,0,1,0,0,0,0,1,0,1,1,1,0,1,0,1,1,1,1,1,1,1,1,0,0,1,1,1,
-                            0,1,0,0,0,0,0,1,1,1,1,1,0,1,1,0,1,0,1,0,1,1,0,0,0,0,0,0,0,0,1,1,0,1,1,1,1,
-                            0,1,0,1,1,1,0,1,0,1,0,1,0,0,1,0,1,1,1,1,1,1,1,1,1,1,1,0])
-"""
+
 fingerprint = torch.tensor([0,1,0,0,1,0,1,1,1,0,0,0,0,0,0,0,1,0,1,0,0,0,1,1,1,1,0,1,0,0,1,1,1,1,1,1,1,1,0,
                             1,1,0,1,0,0,1,0,0,0,0,1,0,1,0,0,0,0,1,1,0,0,1,0,0,0,1,1,1,0,0,1,1,1,1,0,1,0,1,
                             0,1,1,1,1,0,1,0,0,0,0,1,0,0,0,1,1,1,1,0,0,1]).to(device) #embedded fingerprint with seed 42_3
 
-#image_directory = '/media/giacomo/volume/old/stylegan2_gen_50k_config-e_25'
-image_directory='/media/giacomo/volume/no_rand/stylegan2_gen_50k_config-e_25_seed42_3'
-
+#insert the path of the images to perturbate
+image_directory=''
 
 
 IMAGE_RESOLUTION = 128
@@ -56,12 +50,9 @@ for i in range(128,10,-8):
 
         j += 1 #to count the number of images in the folder
 
-        #if j == 10: break
+        if j == 10: break
         
         if filename.endswith(('.png', '.jpg', '.jpeg', '.bmp', '.tiff')):
-
-            print("Dimensione")
-            print(i)
             
             img_path = os.path.join(image_directory, filename)
             img = Image.open(img_path)
@@ -89,8 +80,10 @@ for i in range(128,10,-8):
             # Paste the resized image onto the black background
             img_final.paste(img_cropped, (left_pad, top_pad))
 
+            #insert the path where to save the perturbated images
+            path_to_save= ""
 
-            img_crop_path = os.path.join("/media/giacomo/volume/no_rand/robustness/jpeg_cropsize_128-63_style2_50k", f"{i}") 
+            img_crop_path = os.path.join(path_to_save, f"{i}") 
             os.makedirs(img_crop_path, exist_ok=True)
             img_filename = os.path.join(img_crop_path, filename)
             img_final.save(img_filename)
@@ -104,13 +97,10 @@ for i in range(128,10,-8):
             detected_fingerprints = RevealNet(image_tensor.unsqueeze(0))
             detected_fingerprints = (detected_fingerprints > 0).long()
         
-            print(detected_fingerprints)
             bitwise_accuracy += (detected_fingerprints == fingerprint).float().mean(dim=1).sum().item()
 
             img_array = np.array(img)
         
-            print("img_array")
-            print(img_array)
             
     psnr = main(image_directory, img_crop_path)
     psnr_array.append(psnr)
@@ -119,20 +109,4 @@ for i in range(128,10,-8):
     accuracy_array.append(bitwise_accuracy)
     
 
-print(crop_size_array)
-print(accuracy_array)
-print(psnr_array)
-"""
-plt.plot(crop_size_array, accuracy_array, marker='s', linestyle='--', color='black', markerfacecolor='red', markeredgecolor='red')
-plt.grid(color='grey', linestyle='-', linewidth=0.5)
-
-plt.yticks([0.4,0.5,0.6,0.7,0.8,0.9,1.0]) #to fix the y scale but it can be used also accuracy_array
-plt.gca().invert_xaxis() 
-
-plt.title("Center cropping", fontweight="bold")
-plt.ylabel("Bitwise accuracy")
-plt.xlabel("Crop size")
-plt.show()
-"""
-
-plotting(crop_size_array,accuracy_array,psnr_array,"Crop size","Bitwise accuracy","PSNR (dB)","Center cropping")
+plotting_center_jpeg(crop_size_array,accuracy_array,psnr_array,"Crop size","Bitwise accuracy","PSNR (dB)","Center cropping")
