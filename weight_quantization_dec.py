@@ -7,12 +7,6 @@ from accuracy import main as maina
 import matplotlib.pyplot as plt
 
 
-#In the article this is applied to the ProGAN network and images generation.
-#I use StyleGAN2 instead of ProGAN because the images generated with it showed a better bitwise_accuracy.
-#However, in the article this robustness study is applied to the network model, but
-#in my opinion is more worth to study how this affect the decoder, in order to study
-#how the quantization precision can affect it in a malicious point of view.
-
 
 #Function to quantize model weights to a specific precision
 def quantize_weights(model, precision):
@@ -26,8 +20,8 @@ quant_prec_array = []
 
 device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
-#decoder_path = "/media/giacomo/volume/test_yuv/primo/checkpoints/dec.pth"
-decoder_path = "/media/giacomo/volume/yuv_base/enc-dec/checkpoints/dec.pth"
+#insert the path of the decoder that you want to use
+decoder_path = ""
 
 
 #fingerprint embedded in the images
@@ -35,8 +29,8 @@ fingerprint = torch.tensor([0,1,0,0,0,1,0,0,0,1,0,0,0,0,1,0,1,1,1,0,1,0,1,1,1,1,
                             0,1,0,0,0,0,0,1,1,1,1,1,0,1,1,0,1,0,1,0,1,1,0,0,0,0,0,0,0,0,1,1,0,1,1,1,1,
                             0,1,0,1,1,1,0,1,0,1,0,1,0,0,1,0,1,1,1,1,1,1,1,1,1,1,1,0])
 
-#image_directory = '/media/giacomo/volume/test_yuv/stylegan2_gen_50k_config-e_25'
-image_directory = '/media/giacomo/volume/yuv_base/stylegan2_gen_50k_config-e_75_seed42'
+#insert the path of the images that you want to perturbate
+image_directory = ''
 
 
 IMAGE_RESOLUTION = 128
@@ -83,9 +77,6 @@ while i <= end:
 
     i = i*step
     
-
-print(quant_prec_array)
-print(accuracy_array)
 
 plt.plot(quant_prec_array, accuracy_array, marker='s', linestyle='--', color='black', markerfacecolor='red', markeredgecolor='red')
 plt.grid(color='grey', linestyle='-', linewidth=0.5)

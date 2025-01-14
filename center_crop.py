@@ -6,7 +6,7 @@ import cv2
 import torch
 from models import StegaStampDecoder
 import matplotlib.pyplot as plt
-from graphs import plotting
+from graphs import plotting_center_jpeg
 from psnr import main as mainp
 from accuracy import main as maina
 
@@ -16,14 +16,16 @@ psnr_array = []
 
 device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
-decoder_path = "/media/giacomo/volume/yuv_base/enc-dec/checkpoints/dec.pth"
+#insert the path of the decoder that you want to use
+decoder_path = ""
 
 #fingerprint embedded in the images
 fingerprint = torch.tensor([0,1,0,0,0,1,0,0,0,1,0,0,0,0,1,0,1,1,1,0,1,0,1,1,1,1,1,1,1,1,0,0,1,1,1,
                             0,1,0,0,0,0,0,1,1,1,1,1,0,1,1,0,1,0,1,0,1,1,0,0,0,0,0,0,0,0,1,1,0,1,1,1,1,
                             0,1,0,1,1,1,0,1,0,1,0,1,0,0,1,0,1,1,1,1,1,1,1,1,1,1,1,0])
 
-image_directory = '/media/giacomo/volume/yuv_base/stylegan2_gen_50k_config-e_75_seed42'
+#insert the path of the images that you want to perturbate
+image_directory = ''
 
 
 bitwise_accuracy = 0
@@ -35,13 +37,11 @@ for i in range(128,10,-8):
 
         j += 1 #to count the number of images in the folder
 
-        #if j == 10: break
+        #to ensure that the kernel has odd dimensions. It is mandatory to use the following blurring function
+        #if j == 10: break 
         
         if filename.endswith(('.png', '.jpg', '.jpeg', '.bmp', '.tiff')):
 
-            print("Dimensione")
-            print(i)
-            
             img_path = os.path.join(image_directory, filename)
             img = Image.open(img_path)
 
@@ -69,7 +69,9 @@ for i in range(128,10,-8):
             img_final.paste(img_cropped, (left_pad, top_pad))
 
 
-            img_crop_path = os.path.join("/media/giacomo/volume/yuv_base/robustness_75_seed42/cropsize_128-63_style2_50k", f"{i}") 
+            #path where you want to save all the perturbated images
+            path_to_save = ""
+            img_crop_path = os.path.join(path_to_save, f"{i}") 
             os.makedirs(img_crop_path, exist_ok=True)
             img_filename = os.path.join(img_crop_path, filename)
             img_final.save(img_filename)
@@ -83,20 +85,4 @@ for i in range(128,10,-8):
     accuracy_array.append(bitwise_accuracy)
     
 
-print(crop_size_array)
-print(accuracy_array)
-print(psnr_array)
-"""
-plt.plot(crop_size_array, accuracy_array, marker='s', linestyle='--', color='black', markerfacecolor='red', markeredgecolor='red')
-plt.grid(color='grey', linestyle='-', linewidth=0.5)
-
-plt.yticks([0.4,0.5,0.6,0.7,0.8,0.9,1.0]) #to fix the y scale but it can be used also accuracy_array
-plt.gca().invert_xaxis() 
-
-plt.title("Center cropping", fontweight="bold")
-plt.ylabel("Bitwise accuracy")
-plt.xlabel("Crop size")
-plt.show()
-"""
-
-plotting(crop_size_array,accuracy_array,psnr_array,"Crop size","Bitwise accuracy","PSNR (dB)","Center cropping")
+plotting_center_jpeg(crop_size_array,accuracy_array,psnr_array,"Crop size","Bitwise accuracy","PSNR (dB)","Center cropping")

@@ -1,3 +1,9 @@
+
+
+
+"""
+#testing class
+
 import torch
 from models import StegaStampDecoder
 import os
@@ -63,4 +69,4 @@ bitwise_accuracy = bitwise_accuracy / NUM_IMAGES
 print(bitwise_accuracy)
 
        
-        
+"""
